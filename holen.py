@@ -38,7 +38,7 @@ data = response.json()
 stop_name = data['data']['stopPlace']['name']
 departures = data['data']['stopPlace']['estimatedCalls']
 
-print(f"--- Next departures from {stop_name} ---")
+print(f"Bus departures from {stop_name} ---")
 
 # 7. Loop through each bus and print it nicely
 for bus in departures:
