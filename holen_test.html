@@ -1,0 +1,48 @@
+<div id="bus-container" style="font-family: sans-serif; border: 1px solid #ccc; padding: 15px; width: 300px; border-radius: 8px;">
+    <h3 id="stop-name">Loading...</h3>
+    <ul id="departures-list" style="list-style: none; padding: 0;"></ul>
+</div>
+
+<script>
+async function getBuses() {
+    const query = `
+    {
+      stopPlace(id: "NSR:StopPlace:31834") {
+        name
+        estimatedCalls(numberOfDepartures: 5) {
+          expectedArrivalTime
+          destinationDisplay { frontText }
+          serviceJourney { line { publicCode } }
+        }
+      }
+    }`;
+
+    const response = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'ET-Client-Name': 'student-project'
+        },
+        body: JSON.stringify({ query })
+    });
+
+    const result = await response.json();
+    const stop = result.data.stopPlace;
+    
+    document.getElementById('stop-name').innerText = stop.name;
+    const list = document.getElementById('departures-list');
+    list.innerHTML = ""; // Clear old buses
+
+    stop.estimatedCalls.forEach(bus => {
+        const time = new Date(bus.expectedArrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const li = document.createElement('li');
+        li.style.padding = "5px 0";
+        li.innerHTML = `<strong>${bus.serviceJourney.line.publicCode}</strong> to ${bus.destinationDisplay.frontText} - <b>${time}</b>`;
+        list.appendChild(li);
+    });
+}
+
+// Run it once immediately, then refresh every 30 seconds
+getBuses();
+setInterval(getBuses, 30000);
+</script>
